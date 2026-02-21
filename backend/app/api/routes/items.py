@@ -26,7 +26,9 @@ def read_items(
     if current_user.is_superuser:
         items, count = crud.get_items(skip=skip, limit=limit)
     else:
-        items, count = crud.get_items_by_owner(owner_id=current_user.id, skip=skip, limit=limit)
+        items, count = crud.get_items_by_owner(
+            owner_id=current_user.id, skip=skip, limit=limit
+        )
 
     return ItemsPublic(
         data=[ItemPublic.model_validate(item) for item in items],
@@ -50,7 +52,9 @@ def read_item(
 ) -> ItemPublic:
     item = crud.get_item(item_id=item_id)
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
 
     if not current_user.is_superuser and item.owner_id != current_user.id:
         raise HTTPException(
@@ -69,7 +73,9 @@ def update_item(
 ) -> ItemPublic:
     item = crud.get_item(item_id=item_id)
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
 
     if not current_user.is_superuser and item.owner_id != current_user.id:
         raise HTTPException(
@@ -88,7 +94,9 @@ def delete_item(
 ) -> Message:
     item = crud.get_item(item_id=item_id)
     if not item:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Item not found"
+        )
 
     if not current_user.is_superuser and item.owner_id != current_user.id:
         raise HTTPException(

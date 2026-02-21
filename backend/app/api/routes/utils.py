@@ -1,8 +1,7 @@
 from fastapi import APIRouter
 
-from app.api.deps import CurrentUser
-
 from app import crud
+from app.api.deps import CurrentUser
 
 router = APIRouter(prefix="/utils", tags=["utils"])
 
@@ -18,7 +17,6 @@ def debug_seed() -> dict[str, int]:
         "users": len(crud.list_all_users()),
         "items": len(crud.list_all_items()),
     }
-    
 
 
 @router.get("/whoami")

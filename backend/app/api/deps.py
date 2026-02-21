@@ -27,7 +27,7 @@ def get_current_user(token: TokenDep) -> User:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
     except jwt.PyJWTError:
-        raise credentials_exception
+        raise credentials_exception from None
 
     if token_data.sub is None:
         raise credentials_exception
@@ -35,7 +35,7 @@ def get_current_user(token: TokenDep) -> User:
     try:
         user_id = UUID(token_data.sub)
     except ValueError:
-        raise credentials_exception
+        raise credentials_exception from None
 
     user = crud.get_user(user_id=user_id)
     if not user:

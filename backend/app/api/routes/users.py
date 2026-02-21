@@ -21,6 +21,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 # ---------------- Current user endpoints ----------------
 
+
 @router.get("/me")
 def read_user_me(current_user: CurrentUser) -> UserPublic:
     return UserPublic.model_validate(current_user)
@@ -65,6 +66,7 @@ def update_password_me(
 
 
 # ---------------- Superuser endpoints ----------------
+
 
 @router.get("/")
 def read_users(

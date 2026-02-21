@@ -64,8 +64,11 @@ _seed_mock_data()
 
 # ---------------- User CRUD ----------------
 
+
 def get_user_by_email(*, email: str) -> User | None:
-    return next((u for u in _USERS_BY_ID.values() if u.email.lower() == email.lower()), None)
+    return next(
+        (u for u in _USERS_BY_ID.values() if u.email.lower() == email.lower()), None
+    )
 
 
 def get_user(*, user_id: UUID) -> User | None:
@@ -128,7 +131,9 @@ def update_user_password(*, user: User, new_password: str) -> User:
 
 
 def delete_items_by_owner(*, owner_id: UUID) -> int:
-    to_delete = [item_id for item_id, item in _ITEMS_BY_ID.items() if item.owner_id == owner_id]
+    to_delete = [
+        item_id for item_id, item in _ITEMS_BY_ID.items() if item.owner_id == owner_id
+    ]
     for item_id in to_delete:
         _ITEMS_BY_ID.pop(item_id, None)
     return len(to_delete)
@@ -151,6 +156,7 @@ def authenticate(*, email: str, password: str) -> User | None:
 
 # ---------------- Item CRUD ----------------
 
+
 def create_item(*, item_in: ItemCreate, owner_id: UUID) -> Item:
     item = Item(
         title=item_in.title,
@@ -172,7 +178,9 @@ def get_items(*, skip: int = 0, limit: int = 100) -> tuple[list[Item], int]:
     return items[skip : skip + limit], total
 
 
-def get_items_by_owner(*, owner_id: UUID, skip: int = 0, limit: int = 100) -> tuple[list[Item], int]:
+def get_items_by_owner(
+    *, owner_id: UUID, skip: int = 0, limit: int = 100
+) -> tuple[list[Item], int]:
     items = [i for i in _ITEMS_BY_ID.values() if i.owner_id == owner_id]
     items.sort(key=lambda i: i.created_at, reverse=True)
     total = len(items)
@@ -196,6 +204,7 @@ def delete_item(*, item: Item) -> None:
 
 
 # ---------------- Helpers ----------------
+
 
 def reset_mock_data() -> None:
     _USERS_BY_ID.clear()

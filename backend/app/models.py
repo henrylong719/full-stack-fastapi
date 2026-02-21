@@ -1,14 +1,14 @@
 # backend/app/models.py
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-
 # -------------------------
 # Shared / utility schemas
 # -------------------------
+
 
 class Message(BaseModel):
     message: str
@@ -26,6 +26,7 @@ class TokenPayload(BaseModel):
 # -------------------------
 # User models (template-close naming)
 # -------------------------
+
 
 class UserBase(BaseModel):
     email: EmailStr
@@ -65,7 +66,7 @@ class UpdatePassword(BaseModel):
 class User(UserBase):
     id: UUID = Field(default_factory=uuid4)
     hashed_password: str
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -95,6 +96,7 @@ class UserPublicWithItems(UserPublic):
 # Item models (template-close naming)
 # -------------------------
 
+
 class ItemBase(BaseModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = None
@@ -112,7 +114,7 @@ class ItemUpdate(BaseModel):
 class Item(ItemBase):
     id: UUID = Field(default_factory=uuid4)
     owner_id: UUID
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     model_config = ConfigDict(from_attributes=True)
 

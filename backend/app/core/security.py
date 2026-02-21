@@ -1,5 +1,5 @@
 # backend/app/core/security.py
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
@@ -17,7 +17,7 @@ password_hash = PasswordHash((Argon2Hasher(), BcryptHasher()))
 
 
 def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
-    expire = datetime.now(timezone.utc) + expires_delta
+    expire = datetime.now(UTC) + expires_delta
     to_encode = {
         "exp": expire,
         "sub": str(subject),
