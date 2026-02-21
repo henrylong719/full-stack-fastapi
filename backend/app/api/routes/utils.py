@@ -1,7 +1,8 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 
 from app import crud
 from app.api.deps import CurrentUser
+from app.core.config import settings
 
 router = APIRouter(prefix="/utils", tags=["utils"])
 
@@ -13,6 +14,8 @@ def health_check() -> dict[str, str]:
 
 @router.get("/debug-seed")
 def debug_seed() -> dict[str, int]:
+    if not settings.is_local:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return {
         "users": len(crud.list_all_users()),
         "items": len(crud.list_all_items()),
