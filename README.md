@@ -6,7 +6,7 @@ A full-stack web application inspired by the official [fastapi/full-stack-fastap
 
 | Layer    | Technology                                    |
 | -------- | --------------------------------------------- |
-| Backend  | FastAPI, Pydantic, PyJWT, uvicorn             |
+| Backend  | FastAPI, Pydantic, PyJWT, MySQL, uvicorn      |
 | Frontend | Next.js 16 (App Router), React 19, TypeScript |
 | Styling  | Tailwind CSS v4, shadcn/ui, Radix UI          |
 | Data     | TanStack Query, React Hook Form, Zod          |
@@ -20,8 +20,10 @@ full-stack-fastapi/
 │   ├── app/
 │   │   ├── api/      # Route handlers and dependencies
 │   │   ├── core/     # Config, security, logging
-│   │   ├── crud/     # Data access layer (users, items)
+│   │   ├── crud/     # Service layer for auth/users/items
+│   │   ├── db/       # MySQL connection + schema management
 │   │   ├── models.py # Pydantic schemas
+│   │   ├── repositories/ # MySQL persistence implementations
 │   │   └── main.py   # App entrypoint
 │   └── tests/        # pytest test suite
 ├── frontend/         # Next.js client
@@ -70,6 +72,8 @@ uv run uvicorn app.main:app --reload
 
 The API will be available at **http://localhost:8000**. Swagger docs are at `/api/v1/openapi.json` (local environment only).
 
+The backend uses MySQL for persistence, so start a MySQL server and set the `MYSQL_*` variables in the root `.env` before launching the API.
+
 ### 3. Start the frontend
 
 ```bash
@@ -92,6 +96,15 @@ The frontend will be available at **http://localhost:3000**.
 | `ACCESS_TOKEN_EXPIRE_MINUTES`  | `60`                  | Token lifetime in minutes                |
 | `FRONTEND_HOST`                | `http://localhost:3000` | Added to CORS origins automatically    |
 | `BACKEND_CORS_ORIGINS`         | `[]`                  | JSON array or comma-separated URLs       |
+| `MYSQL_HOST`                   | `127.0.0.1`           | MySQL host                               |
+| `MYSQL_PORT`                   | `3306`                | MySQL port                               |
+| `MYSQL_USER`                   | `root`                | MySQL username                           |
+| `MYSQL_PASSWORD`               | *(empty)*             | MySQL password                           |
+| `MYSQL_DATABASE`               | `full_stack_fastapi`  | MySQL schema/database name               |
+| `MYSQL_CONNECT_TIMEOUT`        | `10`                  | Connection timeout in seconds            |
+| `MYSQL_AUTO_CREATE_DATABASE`   | `false`               | Creates the MySQL database if missing    |
+| `MYSQL_AUTO_CREATE_TABLES`     | `true`                | Creates `users` and `items` tables on startup |
+| `MYSQL_SEED_LOCAL_DATA`        | `true`                | Seeds local demo users/items into MySQL  |
 
 ### Frontend (`frontend/.env.local`)
 

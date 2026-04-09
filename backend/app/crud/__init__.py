@@ -21,6 +21,7 @@ from app.crud.users import (
     update_user_me,
     update_user_password,
 )
+from app.repositories import initialize_repositories, reset_repositories
 
 __all__ = [
     "authenticate",
@@ -37,8 +38,9 @@ __all__ = [
     "get_users",
     "list_all_items",
     "list_all_users",
-    "reset_mock_data",
+    "reset_data_store",
     "seed_mock_data",
+    "initialize_data_store",
     "update_item",
     "update_user",
     "update_user_me",
@@ -46,13 +48,11 @@ __all__ = [
 ]
 
 
-def reset_mock_data() -> None:
-    from app.crud.items import _ITEMS_BY_ID
-    from app.crud.users import _USERS_BY_ID
-
-    _USERS_BY_ID.clear()
-    _ITEMS_BY_ID.clear()
+def initialize_data_store() -> None:
+    initialize_repositories()
     seed_mock_data()
 
 
-seed_mock_data()
+def reset_data_store() -> None:
+    reset_repositories()
+    seed_mock_data()

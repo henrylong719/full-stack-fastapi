@@ -1,39 +1,34 @@
-from uuid import UUID
+from datetime import UTC, datetime
+from uuid import UUID, uuid4
 
 from app.core.security import get_password_hash, verify_password
-from app.crud.items import delete_items_by_owner
 from app.models import User, UserCreate, UserUpdate, UserUpdateMe
-
-_USERS_BY_ID: dict[UUID, User] = {}
+from app.repositories import get_user_repository
 
 
 def get_user_by_email(*, email: str) -> User | None:
-    return next(
-        (u for u in _USERS_BY_ID.values() if u.email.lower() == email.lower()), None
-    )
+    return get_user_repository().get_by_email(email)
 
 
 def get_user(*, user_id: UUID) -> User | None:
-    return _USERS_BY_ID.get(user_id)
+    return get_user_repository().get(user_id)
 
 
 def get_users(*, skip: int = 0, limit: int = 100) -> tuple[list[User], int]:
-    users = list(_USERS_BY_ID.values())
-    users.sort(key=lambda u: u.created_at, reverse=True)
-    total = len(users)
-    return users[skip : skip + limit], total
+    return get_user_repository().list(skip=skip, limit=limit)
 
 
 def create_user(*, user_create: UserCreate) -> User:
     user = User(
+        id=uuid4(),
         email=user_create.email,
         full_name=user_create.full_name,
         is_active=user_create.is_active,
         is_superuser=user_create.is_superuser,
         hashed_password=get_password_hash(user_create.password),
+        created_at=datetime.now(UTC),
     )
-    _USERS_BY_ID[user.id] = user
-    return user
+    return get_user_repository().create(user)
 
 
 def update_user(*, user: User, user_update: UserUpdate) -> User:
@@ -50,8 +45,7 @@ def update_user(*, user: User, user_update: UserUpdate) -> User:
     if "password" in update_data and update_data["password"]:
         user.hashed_password = get_password_hash(update_data["password"])
 
-    _USERS_BY_ID[user.id] = user
-    return user
+    return get_user_repository().update(user)
 
 
 def update_user_me(*, user: User, user_update: UserUpdateMe) -> User:
@@ -62,20 +56,16 @@ def update_user_me(*, user: User, user_update: UserUpdateMe) -> User:
     if "full_name" in update_data:
         user.full_name = update_data["full_name"]
 
-    _USERS_BY_ID[user.id] = user
-    return user
+    return get_user_repository().update(user)
 
 
 def update_user_password(*, user: User, new_password: str) -> User:
     user.hashed_password = get_password_hash(new_password)
-    _USERS_BY_ID[user.id] = user
-    return user
+    return get_user_repository().update(user)
 
 
 def delete_user(*, user: User, cascade_items: bool = True) -> None:
-    if cascade_items:
-        delete_items_by_owner(owner_id=user.id)
-    _USERS_BY_ID.pop(user.id, None)
+    get_user_repository().delete(user_id=user.id, cascade_items=cascade_items)
 
 
 def authenticate(*, email: str, password: str) -> User | None:
@@ -88,4 +78,4 @@ def authenticate(*, email: str, password: str) -> User | None:
 
 
 def list_all_users() -> list[User]:
-    return list(_USERS_BY_ID.values())
+    return get_user_repository().list_all()

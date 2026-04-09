@@ -1,6 +1,6 @@
 # Backend (FastAPI)
 
-The API server for the full-stack application. Built with FastAPI, Pydantic v2, and PyJWT.
+The API server for the full-stack application. Built with FastAPI, Pydantic v2, PyJWT, and raw SQL on MySQL.
 
 ## Architecture
 
@@ -21,10 +21,16 @@ app/
 │   ├── config.py     # Settings via pydantic-settings
 │   ├── security.py   # Password hashing, JWT creation/verification
 │   └── logging.py    # Logging configuration
-└── crud/
-    ├── users.py      # User data operations
-    ├── items.py      # Item data operations
-    └── seed.py       # Local-only seed data
+├── db/
+│   ├── mysql.py      # MySQL pool, query helpers, connection lifecycle
+│   └── schema.py     # Raw SQL DDL for app tables
+├── crud/
+│   ├── users.py      # User business logic and auth helpers
+│   ├── items.py      # Item business logic
+│   └── seed.py       # Local-only seed data
+└── repositories/
+    ├── mysql/        # MySQL repository implementations
+    └── store.py      # Repository wiring and initialization
 ```
 
 ## Key Features
@@ -32,6 +38,8 @@ app/
 - **Authentication**: OAuth2 password flow with JWT access tokens
 - **Authorization**: Role-based access (superuser / regular user)
 - **Validation**: Pydantic v2 models with field-level constraints
+- **Database**: MySQL-backed raw SQL CRUD for users and items
+- **Architecture**: Thin CRUD/service layer over MySQL repositories
 - **Password hashing**: Argon2 + Bcrypt via `pwdlib`
 - **Security headers**: X-Content-Type-Options, X-Frame-Options, HSTS (production)
 - **CORS**: Restricted to configured origins with specific methods/headers
@@ -68,8 +76,11 @@ Key settings:
 
 | Variable       | Effect                                                |
 | -------------- | ----------------------------------------------------- |
-| `ENVIRONMENT`  | `local` enables seed data, debug endpoints, Swagger   |
-| `SECRET_KEY`   | JWT signing — validated for strength in non-local envs |
+| `ENVIRONMENT`   | `local` enables seed data, debug endpoints, Swagger    |
+| `SECRET_KEY`    | JWT signing, validated for strength in non-local envs  |
+| `MYSQL_*`       | Connection settings for the MySQL server and database  |
+
+If the MySQL server exists but the database itself has not been created yet, either create it manually or set `MYSQL_AUTO_CREATE_DATABASE=true` for local setup.
 
 ## Testing
 
@@ -77,7 +88,7 @@ Key settings:
 uv run pytest
 ```
 
-Tests use an in-memory data store that resets between test functions via the `auto_reset` fixture.
+Tests use a MySQL test database and reset it between test functions.
 
 ```bash
 # With verbose output

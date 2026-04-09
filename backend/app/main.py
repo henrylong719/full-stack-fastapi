@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 
+from app import crud
 from app.api.main import api_router
 from app.core.config import settings
 from app.core.logging import get_logger, setup_logging
@@ -22,11 +23,13 @@ async def lifespan(app: FastAPI):
     logger.info("Starting application")
     logger.info("Environment: %s", settings.ENVIRONMENT)
     logger.info("API prefix: %s", settings.API_V1_STR)
+    logger.info("MySQL database: %s", settings.MYSQL_DATABASE)
     logger.info(
         "CORS origins (%d): %s",
         len(settings.all_cors_origins),
         settings.all_cors_origins,
     )
+    crud.initialize_data_store()
     yield
     logger.info("Shutting down application")
 

@@ -13,15 +13,15 @@ def _ensure_local() -> None:
         raise HTTPException(status_code=404, detail="Not found")
 
 
-@router.post("/reset-mock-data")
-def reset_mock_data() -> Message:
+@router.post("/reset-data")
+def reset_data() -> Message:
     _ensure_local()
-    crud.reset_mock_data()
-    return Message(message="Mock data reset successfully")
+    crud.reset_data_store()
+    return Message(message="Data reset successfully")
 
 
-@router.get("/mock-summary")
-def mock_summary() -> dict:
+@router.get("/data-summary")
+def data_summary() -> dict:
     _ensure_local()
     users = crud.list_all_users()
     items = crud.list_all_items()

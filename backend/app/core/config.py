@@ -33,6 +33,19 @@ class Settings(BaseSettings):
         list[AnyUrl] | str, BeforeValidator(parse_cors)
     ] = []
 
+    # MySQL settings
+    MYSQL_HOST: str = "127.0.0.1"
+    MYSQL_PORT: int = 3306
+    MYSQL_USER: str = "root"
+    MYSQL_PASSWORD: str = ""
+    MYSQL_DATABASE: str = "full_stack_fastapi"
+    MYSQL_CONNECT_TIMEOUT: int = 10
+    MYSQL_POOL_NAME: str = "app_pool"
+    MYSQL_POOL_SIZE: int = 5
+    MYSQL_AUTO_CREATE_DATABASE: bool = False
+    MYSQL_AUTO_CREATE_TABLES: bool = True
+    MYSQL_SEED_LOCAL_DATA: bool = True
+
     @computed_field
     @property
     def is_local(self) -> bool:
@@ -67,6 +80,15 @@ class Settings(BaseSettings):
                 "SECRET_KEY is too weak for non-local environment. "
                 "Use a long random value (recommended >= 32 bytes)."
             )
+
+        required_mysql_settings = {
+            "MYSQL_HOST": self.MYSQL_HOST,
+            "MYSQL_USER": self.MYSQL_USER,
+            "MYSQL_DATABASE": self.MYSQL_DATABASE,
+        }
+        missing = [name for name, value in required_mysql_settings.items() if not value]
+        if missing:
+            raise ValueError("Missing required MySQL settings: " + ", ".join(missing))
 
         return self
 
