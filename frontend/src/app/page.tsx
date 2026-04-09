@@ -1,6 +1,8 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import {
   CheckCircle2,
@@ -27,20 +29,19 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/common/page-header';
+import { useHasMounted } from '@/hooks/use-has-mounted';
 
-function useStats() {
-  const token = getAccessToken() ?? '';
-
+function useStats(token: string | null) {
   const itemsQuery = useQuery({
     queryKey: ['items', 0, 1],
-    queryFn: () => getItems(token, { skip: 0, limit: 1 }),
+    queryFn: () => getItems(token ?? '', { skip: 0, limit: 1 }),
     enabled: !!token,
     retry: false,
   });
 
   const usersQuery = useQuery({
     queryKey: ['users', 0, 1],
-    queryFn: () => getUsers(token, { skip: 0, limit: 1 }),
+    queryFn: () => getUsers(token ?? '', { skip: 0, limit: 1 }),
     enabled: !!token,
     retry: false,
   });
@@ -109,15 +110,40 @@ const NAV_LINKS = [
 ];
 
 export default function DashboardHomePage() {
-  const meQuery = useCurrentUserQuery();
-  const { itemsQuery, usersQuery, healthQuery } = useStats();
+  const router = useRouter();
+  const hasMounted = useHasMounted();
+  const token = hasMounted ? getAccessToken() : null;
+
+  const meQuery = useCurrentUserQuery({ enabled: hasMounted && !!token });
+  const { itemsQuery, usersQuery, healthQuery } = useStats(token);
+
+  useEffect(() => {
+    if (hasMounted && !token) {
+      router.replace('/login');
+    }
+  }, [hasMounted, token, router]);
+
+  if (!hasMounted) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">Loading app...</p>
+      </main>
+    );
+  }
+
+  if (!token) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+      </main>
+    );
+  }
 
   const user = meQuery.data;
   const backendOk = healthQuery.isSuccess;
 
   return (
-    <div className="page-container space-y-8">
-      {/* Header */}
+    <div className="page-container space-y-8 p-6">
       <PageHeader
         title={
           meQuery.isSuccess
@@ -129,7 +155,6 @@ export default function DashboardHomePage() {
         }
       />
 
-      {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <StatCard
           label="Total items"
@@ -172,7 +197,6 @@ export default function DashboardHomePage() {
         </Card>
       </div>
 
-      {/* Profile + Role */}
       {meQuery.isSuccess && user && (
         <Card>
           <CardHeader>
@@ -207,7 +231,6 @@ export default function DashboardHomePage() {
         </Card>
       )}
 
-      {/* Quick links */}
       <div>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground uppercase tracking-wide">
           Quick links

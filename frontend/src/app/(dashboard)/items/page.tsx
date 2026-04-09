@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { ItemForm } from '@/components/common/item-form';
 import { Button } from '@/components/ui/button';
-import { ApiError } from '@/lib/api/client';
 import {
   useCreateItemMutation,
   useDeleteItemMutation,
@@ -47,7 +46,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatApiDetail } from '@/lib/api/errors';
 import { PageHeader } from '@/components/common/page-header';
 
 import { PaginationControls } from '@/components/common/pagination-controls';
@@ -73,8 +71,6 @@ export default function ItemsPage() {
   const items = itemsQuery.data?.data ?? [];
   const totalCount = itemsQuery.data?.count ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
-  const canGoPrev = page > 1;
-  const canGoNext = page < totalPages;
 
   useEffect(() => {
     if (totalPages > 0 && page > totalPages) {
@@ -99,25 +95,6 @@ export default function ItemsPage() {
       toast.error('Failed to delete item');
     }
   }, [deleteMutation.isError]);
-
-  const mutationErrorMessage = useMemo(() => {
-    const err =
-      createMutation.error ?? updateMutation.error ?? deleteMutation.error;
-    if (!err) return null;
-
-    if (err instanceof ApiError) {
-      if (
-        typeof err.body === 'object' &&
-        err.body !== null &&
-        'detail' in err.body
-      ) {
-        return formatApiDetail((err.body as { detail?: unknown }).detail);
-      }
-      return err.message;
-    }
-
-    return err instanceof Error ? err.message : 'Something went wrong';
-  }, [createMutation.error, updateMutation.error, deleteMutation.error]);
 
   return (
     <div className="space-y-6">

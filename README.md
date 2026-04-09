@@ -90,7 +90,7 @@ The frontend will be available at **http://localhost:3000**.
 | `ENVIRONMENT`                  | `local`               | `local`, `staging`, or `production`      |
 | `SECRET_KEY`                   | *(random)*            | JWT signing key (must be strong in prod) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES`  | `60`                  | Token lifetime in minutes                |
-| `FRONTEND_HOST`                | `http://localhost:5173` | Added to CORS origins automatically    |
+| `FRONTEND_HOST`                | `http://localhost:3000` | Added to CORS origins automatically    |
 | `BACKEND_CORS_ORIGINS`         | `[]`                  | JSON array or comma-separated URLs       |
 
 ### Frontend (`frontend/.env.local`)
