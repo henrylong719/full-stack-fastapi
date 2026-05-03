@@ -21,6 +21,8 @@ class Token(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: str | None = None
+    session_version: int = 0
+    csrf: str | None = None
 
 
 # -------------------------
@@ -66,6 +68,7 @@ class UpdatePassword(BaseModel):
 class User(UserBase):
     id: UUID = Field(default_factory=uuid4)
     hashed_password: str
+    session_version: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     model_config = ConfigDict(from_attributes=True)

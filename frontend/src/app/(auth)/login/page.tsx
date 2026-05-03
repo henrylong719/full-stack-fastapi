@@ -24,8 +24,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { useLoginMutation } from '@/hooks/use-auth';
-import { getAccessToken } from '@/lib/api/auth';
+import { useCurrentUserQuery, useLoginMutation } from '@/hooks/use-auth';
 import { ApiError } from '@/lib/api/client';
 import { formatApiDetail } from '@/lib/api/errors';
 
@@ -39,6 +38,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const loginMutation = useLoginMutation();
+  const currentUserQuery = useCurrentUserQuery();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -49,10 +49,10 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    if (getAccessToken()) {
+    if (currentUserQuery.isSuccess) {
       router.replace('/');
     }
-  }, [router]);
+  }, [currentUserQuery.isSuccess, router]);
 
   const onSubmit = async (values: LoginFormValues) => {
     try {

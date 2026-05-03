@@ -40,18 +40,16 @@ export type ChangeMyPasswordInput = {
   new_password: string;
 };
 
-export function getCurrentUser(token: string) {
+export function getCurrentUser(token?: string) {
   return apiFetch<UserPublic>('/api/v1/users/me', {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
   });
 }
 
 export function getUsers(
-  token: string,
   params?: { skip?: number; limit?: number },
+  token?: string,
 ) {
   const search = new URLSearchParams();
   if (params?.skip !== undefined) search.set('skip', String(params.skip));
@@ -62,18 +60,14 @@ export function getUsers(
 
   return apiFetch<UsersPublic>(path, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
   });
 }
 
-export function createUser(token: string, input: UserCreateInput) {
+export function createUser(input: UserCreateInput, token?: string) {
   return apiFetch<UserPublic>('/api/v1/users/', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
     body: JSON.stringify({
       email: input.email,
       full_name: input.full_name ?? null,
@@ -85,29 +79,25 @@ export function createUser(token: string, input: UserCreateInput) {
 }
 
 export function updateUser(
-  token: string,
   userId: string,
   input: UserUpdateInput,
+  token?: string,
 ) {
   return apiFetch<UserPublic>(`/api/v1/users/${userId}`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
     body: JSON.stringify(input),
   });
 }
 
-export function deleteUser(token: string, userId: string) {
+export function deleteUser(userId: string, token?: string) {
   return apiFetch<{ message: string }>(`/api/v1/users/${userId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
   });
 }
 
-export async function updateMe(token: string, input: UpdateMeInput) {
+export async function updateMe(input: UpdateMeInput, token?: string) {
   return apiFetch('/api/v1/users/me', {
     method: 'PATCH',
     token,
@@ -116,8 +106,8 @@ export async function updateMe(token: string, input: UpdateMeInput) {
 }
 
 export async function changeMyPassword(
-  token: string,
   input: ChangeMyPasswordInput,
+  token?: string,
 ) {
   return apiFetch('/api/v1/users/me/password', {
     method: 'PATCH',

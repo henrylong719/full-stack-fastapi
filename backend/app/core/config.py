@@ -25,8 +25,11 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Auth settings
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str = ""
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hour
+    ACCESS_TOKEN_COOKIE_NAME: str = "access_token"
+    CSRF_COOKIE_NAME: str = "csrf_token"
+    COOKIE_DOMAIN: str | None = None
 
     FRONTEND_HOST: str = "http://localhost:3000"
     BACKEND_CORS_ORIGINS: Annotated[
@@ -51,6 +54,7 @@ class Settings(BaseSettings):
     def validate_security(self) -> "Settings":
         weak_values = {
             "changethis",
+            "replace-with-a-long-random-secret",
             "secret",
             "password",
             "123456",
@@ -58,14 +62,24 @@ class Settings(BaseSettings):
             "test",
         }
 
+        if self.ENVIRONMENT == "local" and not self.SECRET_KEY.strip():
+            self.SECRET_KEY = secrets.token_urlsafe(32)
+
         # PyJWT warns for short HMAC keys (<32 bytes) when using HS256.
         secret_too_short = len(self.SECRET_KEY.encode("utf-8")) < 32
         secret_is_weak_literal = self.SECRET_KEY.lower() in weak_values
 
-        if self.ENVIRONMENT != "local" and (secret_too_short or secret_is_weak_literal):
+        if self.ENVIRONMENT != "local" and (
+            not self.SECRET_KEY.strip() or secret_too_short or secret_is_weak_literal
+        ):
             raise ValueError(
                 "SECRET_KEY is too weak for non-local environment. "
                 "Use a long random value (recommended >= 32 bytes)."
+            )
+
+        if self.ENVIRONMENT == "production" and "localhost" in self.FRONTEND_HOST:
+            raise ValueError(
+                "FRONTEND_HOST must be set to the production frontend origin."
             )
 
         return self

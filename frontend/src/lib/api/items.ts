@@ -24,8 +24,8 @@ export type ItemUpdateInput = {
 };
 
 export function getItems(
-  token: string,
   params?: { skip?: number; limit?: number },
+  token?: string,
 ) {
   const search = new URLSearchParams();
   if (params?.skip !== undefined) search.set('skip', String(params.skip));
@@ -36,18 +36,14 @@ export function getItems(
 
   return apiFetch<ItemsPublic>(path, {
     method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
   });
 }
 
-export function createItem(token: string, input: ItemCreateInput) {
+export function createItem(input: ItemCreateInput, token?: string) {
   return apiFetch<ItemPublic>('/api/v1/items/', {
     method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
     body: JSON.stringify({
       title: input.title,
       description: input.description ?? null,
@@ -56,24 +52,20 @@ export function createItem(token: string, input: ItemCreateInput) {
 }
 
 export function updateItem(
-  token: string,
   itemId: string,
   input: ItemUpdateInput,
+  token?: string,
 ) {
   return apiFetch<ItemPublic>(`/api/v1/items/${itemId}`, {
     method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
     body: JSON.stringify(input),
   });
 }
 
-export function deleteItem(token: string, itemId: string) {
+export function deleteItem(itemId: string, token?: string) {
   return apiFetch<{ message: string }>(`/api/v1/items/${itemId}`, {
     method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    token,
   });
 }

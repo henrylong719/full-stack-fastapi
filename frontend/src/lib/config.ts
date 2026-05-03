@@ -10,5 +10,6 @@ export const config = {
     'NEXT_PUBLIC_API_BASE_URL',
     process.env.NEXT_PUBLIC_API_BASE_URL,
   ),
+  csrfCookieName: process.env.NEXT_PUBLIC_CSRF_COOKIE_NAME?.trim() || 'csrf_token',
   appName: process.env.NEXT_PUBLIC_APP_NAME?.trim() || 'App',
 };

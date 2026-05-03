@@ -29,12 +29,13 @@ app/
 
 ## Key Features
 
-- **Authentication**: OAuth2 password flow with JWT access tokens
+- **Authentication**: OAuth2 password flow with JWT access tokens and HttpOnly auth cookies
 - **Authorization**: Role-based access (superuser / regular user)
 - **Validation**: Pydantic v2 models with field-level constraints
 - **Password hashing**: Argon2 + Bcrypt via `pwdlib`
 - **Security headers**: X-Content-Type-Options, X-Frame-Options, HSTS (production)
 - **CORS**: Restricted to configured origins with specific methods/headers
+- **CSRF protection**: Cookie-authenticated unsafe requests require `X-CSRF-Token`
 - **OpenAPI**: Auto-generated docs, disabled in production
 - **Structured logging**: Environment-aware request logging
 
@@ -69,7 +70,8 @@ Key settings:
 | Variable       | Effect                                                |
 | -------------- | ----------------------------------------------------- |
 | `ENVIRONMENT`  | `local` enables seed data, debug endpoints, Swagger   |
-| `SECRET_KEY`   | JWT signing — validated for strength in non-local envs |
+| `SECRET_KEY`   | JWT signing — required and validated for strength in non-local envs |
+| `COOKIE_DOMAIN`| Optional shared cookie domain for split frontend/API subdomains |
 
 ## Testing
 
@@ -101,6 +103,7 @@ uv run ruff format .
 | Method | Path                          | Auth | Description            |
 | ------ | ----------------------------- | ---- | ---------------------- |
 | POST   | `/api/v1/login/access-token`  | No   | Get JWT access token   |
+| POST   | `/api/v1/login/logout`        | No   | Clear auth cookies     |
 | POST   | `/api/v1/login/test-token`    | Yes  | Verify token is valid  |
 
 ### Users

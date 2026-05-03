@@ -15,8 +15,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 
-import { useCurrentUserQuery } from '@/hooks/use-auth';
-import { getAccessToken } from '@/lib/api/auth';
+import { isAuthError, useCurrentUserQuery } from '@/hooks/use-auth';
 import { getItems } from '@/lib/api/items';
 import { getUsers } from '@/lib/api/users';
 import { getHealthCheck } from '@/lib/api/health';
@@ -31,18 +30,18 @@ import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/common/page-header';
 import { useHasMounted } from '@/hooks/use-has-mounted';
 
-function useStats(token: string | null) {
+function useStats(enabled: boolean) {
   const itemsQuery = useQuery({
     queryKey: ['items', 0, 1],
-    queryFn: () => getItems(token ?? '', { skip: 0, limit: 1 }),
-    enabled: !!token,
+    queryFn: () => getItems({ skip: 0, limit: 1 }),
+    enabled,
     retry: false,
   });
 
   const usersQuery = useQuery({
     queryKey: ['users', 0, 1],
-    queryFn: () => getUsers(token ?? '', { skip: 0, limit: 1 }),
-    enabled: !!token,
+    queryFn: () => getUsers({ skip: 0, limit: 1 }),
+    enabled,
     retry: false,
   });
 
@@ -112,16 +111,15 @@ const NAV_LINKS = [
 export default function DashboardHomePage() {
   const router = useRouter();
   const hasMounted = useHasMounted();
-  const token = hasMounted ? getAccessToken() : null;
 
-  const meQuery = useCurrentUserQuery({ enabled: hasMounted && !!token });
-  const { itemsQuery, usersQuery, healthQuery } = useStats(token);
+  const meQuery = useCurrentUserQuery({ enabled: hasMounted });
+  const { itemsQuery, usersQuery, healthQuery } = useStats(meQuery.isSuccess);
 
   useEffect(() => {
-    if (hasMounted && !token) {
+    if (hasMounted && meQuery.isError && isAuthError(meQuery.error)) {
       router.replace('/login');
     }
-  }, [hasMounted, token, router]);
+  }, [hasMounted, meQuery.error, meQuery.isError, router]);
 
   if (!hasMounted) {
     return (
@@ -131,10 +129,22 @@ export default function DashboardHomePage() {
     );
   }
 
-  if (!token) {
+  if (meQuery.isPending) {
     return (
       <main className="flex min-h-screen items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+        <p className="text-sm text-muted-foreground">Loading user...</p>
+      </main>
+    );
+  }
+
+  if (meQuery.isError) {
+    return (
+      <main className="flex min-h-screen items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">
+          {isAuthError(meQuery.error)
+            ? 'Redirecting to login...'
+            : 'Unable to load your session.'}
+        </p>
       </main>
     );
   }

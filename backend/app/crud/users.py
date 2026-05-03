@@ -49,6 +49,7 @@ def update_user(*, user: User, user_update: UserUpdate) -> User:
         user.is_superuser = update_data["is_superuser"]
     if "password" in update_data and update_data["password"]:
         user.hashed_password = get_password_hash(update_data["password"])
+        user.session_version += 1
 
     _USERS_BY_ID[user.id] = user
     return user
@@ -68,6 +69,7 @@ def update_user_me(*, user: User, user_update: UserUpdateMe) -> User:
 
 def update_user_password(*, user: User, new_password: str) -> User:
     user.hashed_password = get_password_hash(new_password)
+    user.session_version += 1
     _USERS_BY_ID[user.id] = user
     return user
 

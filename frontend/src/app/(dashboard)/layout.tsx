@@ -5,8 +5,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { logout, useCurrentUserQuery } from '@/hooks/use-auth';
-import { getAccessToken } from '@/lib/api/auth';
+import {
+  isAuthError,
+  useCurrentUserQuery,
+  useLogoutMutation,
+} from '@/hooks/use-auth';
 import { ThemeToggle } from '@/components/common/theme-toggle';
 import { useHasMounted } from '@/hooks/use-has-mounted';
 
@@ -19,19 +22,21 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const hasMounted = useHasMounted();
 
-  const token = hasMounted ? getAccessToken() : null;
-
-  const meQuery = useCurrentUserQuery({ enabled: hasMounted && !!token });
+  const meQuery = useCurrentUserQuery({ enabled: hasMounted });
+  const logoutMutation = useLogoutMutation();
 
   useEffect(() => {
-    if (hasMounted && !token) {
+    if (hasMounted && meQuery.isError && isAuthError(meQuery.error)) {
       router.replace('/login');
     }
-  }, [hasMounted, token, router]);
+  }, [hasMounted, meQuery.error, meQuery.isError, router]);
 
-  const handleLogout = () => {
-    logout();
-    router.replace('/login');
+  const handleLogout = async () => {
+    try {
+      await logoutMutation.mutateAsync();
+    } finally {
+      router.replace('/login');
+    }
   };
 
   if (!hasMounted) {
@@ -42,10 +47,22 @@ export default function DashboardLayout({
     );
   }
 
-  if (!token) {
+  if (meQuery.isPending) {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
-        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
+        <p className="text-sm text-muted-foreground">Loading user...</p>
+      </div>
+    );
+  }
+
+  if (meQuery.isError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <p className="text-sm text-muted-foreground">
+          {isAuthError(meQuery.error)
+            ? 'Redirecting to login...'
+            : 'Unable to load your session.'}
+        </p>
       </div>
     );
   }
@@ -57,7 +74,7 @@ export default function DashboardLayout({
           <div className="space-y-1">
             <p className="text-lg font-semibold">Dashboard</p>
             <p className="text-sm text-muted-foreground">
-              {meQuery.isSuccess ? meQuery.data.email : 'Loading user...'}
+              {meQuery.data.email}
             </p>
           </div>
 
@@ -102,8 +119,12 @@ export default function DashboardLayout({
             </Link>
 
             <ThemeToggle />
-            <Button variant="outline" onClick={handleLogout}>
-              Logout
+            <Button
+              variant="outline"
+              onClick={() => void handleLogout()}
+              disabled={logoutMutation.isPending}
+            >
+              {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
             </Button>
           </div>
         </div>

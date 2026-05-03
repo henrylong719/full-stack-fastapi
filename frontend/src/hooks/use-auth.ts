@@ -11,11 +11,12 @@ import {
   type UpdateMeInput,
 } from '@/lib/api/users';
 
-import {
-  clearAccessToken,
-  getAccessToken,
-  setAccessToken,
-} from '@/lib/api/auth';
+import { logoutAccessToken } from '@/lib/api/auth';
+import { ApiError } from '@/lib/api/client';
+
+export function isAuthError(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 401 || error.status === 403);
+}
 
 export function useLoginMutation() {
   const queryClient = useQueryClient();
@@ -23,7 +24,6 @@ export function useLoginMutation() {
   return useMutation({
     mutationFn: loginAccessToken,
     onSuccess: async (data) => {
-      setAccessToken(data.access_token);
       try {
         const user = await getCurrentUser(data.access_token);
         queryClient.setQueryData(['auth', 'me'], user);
@@ -38,17 +38,22 @@ export function useCurrentUserQuery(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
-      const token = getAccessToken();
-      if (!token) throw new Error('Not authenticated');
-      return getCurrentUser(token);
+      return getCurrentUser();
     },
     enabled: options?.enabled ?? true,
     retry: false,
   });
 }
 
-export function logout() {
-  clearAccessToken();
+export function useLogoutMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: logoutAccessToken,
+    onSettled: () => {
+      queryClient.clear();
+    },
+  });
 }
 
 export function useUpdateMeMutation() {
@@ -56,9 +61,7 @@ export function useUpdateMeMutation() {
 
   return useMutation({
     mutationFn: async (input: UpdateMeInput) => {
-      const token = getAccessToken();
-      if (!token) throw new Error('Not authenticated');
-      return updateMe(token, input);
+      return updateMe(input);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
@@ -69,9 +72,7 @@ export function useUpdateMeMutation() {
 export function useChangeMyPasswordMutation() {
   return useMutation({
     mutationFn: async (input: ChangeMyPasswordInput) => {
-      const token = getAccessToken();
-      if (!token) throw new Error('Not authenticated');
-      return changeMyPassword(token, input);
+      return changeMyPassword(input);
     },
   });
 }

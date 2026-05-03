@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getAccessToken } from '@/lib/api/auth';
 import {
   createUser,
   deleteUser,
@@ -15,18 +14,11 @@ import {
 export const usersQueryKey = (params: { skip: number; limit: number }) =>
   ['users', params.skip, params.limit] as const;
 
-function requireToken() {
-  const token = getAccessToken();
-  if (!token) throw new Error('Not authenticated');
-  return token;
-}
-
 export function useUsersQuery(params: { skip: number; limit: number }) {
   return useQuery({
     queryKey: usersQueryKey(params),
     queryFn: async () => {
-      const token = requireToken();
-      return getUsers(token, params);
+      return getUsers(params);
     },
     retry: false,
   });
@@ -37,8 +29,7 @@ export function useCreateUserMutation() {
 
   return useMutation({
     mutationFn: async (input: UserCreateInput) => {
-      const token = requireToken();
-      return createUser(token, input);
+      return createUser(input);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -51,8 +42,7 @@ export function useUpdateUserMutation() {
 
   return useMutation({
     mutationFn: async (params: { userId: string; input: UserUpdateInput }) => {
-      const token = requireToken();
-      return updateUser(token, params.userId, params.input);
+      return updateUser(params.userId, params.input);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -65,8 +55,7 @@ export function useDeleteUserMutation() {
 
   return useMutation({
     mutationFn: async (userId: string) => {
-      const token = requireToken();
-      return deleteUser(token, userId);
+      return deleteUser(userId);
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['users'] });

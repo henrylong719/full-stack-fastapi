@@ -31,7 +31,7 @@ src/
     │   ├── users.ts            # User endpoints + types
     │   ├── items.ts            # Item endpoints + types
     │   ├── health.ts           # Health check
-    │   ├── auth.ts             # Token storage (localStorage)
+    │   ├── auth.ts             # Session logout endpoint
     │   └── errors.ts           # Error formatting utilities
     ├── config.ts               # Environment variable access
     └── query-client.ts         # TanStack Query configuration
@@ -49,7 +49,7 @@ src/
 
 ## Requirements
 
-- Node.js 18+ (LTS recommended)
+- Node.js 20.9+ (required by Next.js 16)
 - [pnpm](https://pnpm.io/)
 
 ## Setup
@@ -65,6 +65,7 @@ cp .env.local.example .env.local
 | Variable                   | Required | Default | Description                       |
 | -------------------------- | -------- | ------- | --------------------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | Yes      | —       | Backend API URL (e.g. `http://localhost:8000`) |
+| `NEXT_PUBLIC_CSRF_COOKIE_NAME` | No   | `csrf_token` | Must match backend `CSRF_COOKIE_NAME` |
 | `NEXT_PUBLIC_APP_NAME`     | No       | `App`   | Display name used in the UI       |
 
 ## Running
@@ -103,7 +104,7 @@ pnpm start
 
 The API client layer is split by domain:
 
-- `lib/api/client.ts` — core `apiFetch<T>()` wrapper with automatic JSON handling, token injection, and `ApiError` class
+- `lib/api/client.ts` — core `apiFetch<T>()` wrapper with automatic JSON handling, credentialed cookie requests, CSRF header injection, timeouts, and `ApiError` class
 - `lib/api/login.ts` — `loginAccessToken()`
 - `lib/api/users.ts` — user CRUD + profile endpoints with TypeScript types
 - `lib/api/items.ts` — item CRUD with TypeScript types

@@ -13,12 +13,13 @@ type Props = {
 
 export default function Providers({ children }: Props) {
   const [queryClient] = useState(() => makeQueryClient());
+  const showDevtools = process.env.NODE_ENV === 'development';
 
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         {children}
-        <ReactQueryDevtools initialIsOpen={false} />
+        {showDevtools ? <ReactQueryDevtools initialIsOpen={false} /> : null}
       </QueryClientProvider>
     </ThemeProvider>
   );

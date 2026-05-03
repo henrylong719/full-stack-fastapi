@@ -63,6 +63,9 @@ def test_update_me_password_success_and_login_with_new_password(client):
     )
     assert old_login.status_code == 400
 
+    old_token_res = client.get("/api/v1/users/me", headers=headers)
+    assert old_token_res.status_code == 401
+
     # New password should work
     new_login = client.post(
         "/api/v1/login/access-token",

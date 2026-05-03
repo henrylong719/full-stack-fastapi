@@ -37,7 +37,7 @@ full-stack-fastapi/
 ## Prerequisites
 
 - Python 3.12+
-- Node.js 18+ (LTS recommended)
+- Node.js 20.9+ (required by Next.js 16)
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
 - [pnpm](https://pnpm.io/) (Node package manager)
 
@@ -88,8 +88,11 @@ The frontend will be available at **http://localhost:3000**.
 | ------------------------------ | --------------------- | ---------------------------------------- |
 | `PROJECT_NAME`                 | `FastAPI App`         | Displayed in OpenAPI docs                |
 | `ENVIRONMENT`                  | `local`               | `local`, `staging`, or `production`      |
-| `SECRET_KEY`                   | *(random)*            | JWT signing key (must be strong in prod) |
+| `SECRET_KEY`                   | *(local generated if omitted)* | JWT signing key (required and strong in prod) |
 | `ACCESS_TOKEN_EXPIRE_MINUTES`  | `60`                  | Token lifetime in minutes                |
+| `ACCESS_TOKEN_COOKIE_NAME`     | `access_token`        | HttpOnly auth cookie name                |
+| `CSRF_COOKIE_NAME`             | `csrf_token`          | CSRF companion cookie name               |
+| `COOKIE_DOMAIN`                | *(unset)*             | Optional shared cookie domain, e.g. `.example.com` |
 | `FRONTEND_HOST`                | `http://localhost:3000` | Added to CORS origins automatically    |
 | `BACKEND_CORS_ORIGINS`         | `[]`                  | JSON array or comma-separated URLs       |
 
@@ -98,6 +101,7 @@ The frontend will be available at **http://localhost:3000**.
 | Variable                   | Default                  | Description           |
 | -------------------------- | ------------------------ | --------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000`  | Backend API base URL  |
+| `NEXT_PUBLIC_CSRF_COOKIE_NAME` | `csrf_token`         | Must match backend `CSRF_COOKIE_NAME` |
 | `NEXT_PUBLIC_APP_NAME`     | `App`                    | Display name (optional) |
 
 ## Default Accounts (Local Only)
@@ -108,6 +112,12 @@ Seed data is only loaded when `ENVIRONMENT=local`.
 | ------------------- | ---------------- | ---------- |
 | admin@example.com   | changethis123    | Superuser  |
 | alice@example.com   | password123      | Regular    |
+
+## Production Notes
+
+This repo still uses an in-memory backend data store. Before production, replace
+it with a real database and migrations. Non-local environments must set a strong
+`SECRET_KEY`, a real `FRONTEND_HOST`, and exact CORS origins.
 
 ## Running Tests
 
